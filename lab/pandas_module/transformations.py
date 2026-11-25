@@ -36,8 +36,12 @@ def add_rating_category(df: pd.DataFrame) -> pd.DataFrame:
     """Adicione a coluna ``rating_category`` com as faixas: "Baixa" (< 85),
     "Média" (85 a 90) e "Alta" (> 90). Dica: use ``pd.cut``."""
     out = df.copy()
-    condicoes = [out["rating"] < 85, out["rating"] <= 90, out["rating"] > 90]
-    out["rating_category"] = np.select(condicoes, ["Baixa", "Média", "Alta"], default=None)
+    out["rating_category"] = pd.cut(
+        out["rating"],
+        bins=[-np.inf, 85, 90, np.inf],
+        labels=["Baixa", "Média", "Alta"],
+        right=False,
+    )
     return out
 
 
@@ -45,5 +49,5 @@ def enrich_with_country(df: pd.DataFrame) -> pd.DataFrame:
     """Adicione a coluna ``country`` extraindo o último trecho após a vírgula de
     ``region`` (ex.: "Mendocino, California" -> "California")."""
     out = df.copy()
-    out["country"] = out["region"].str.extract(r",\s*([^,]+)$")[0].str.strip()
+    out["country"] = out["region"].str.split(",").str[-1].str.strip()
     return out
